@@ -1,0 +1,7 @@
+(princ "In what year did World War II begin?")
+(terpri)
+(princ "Enter base data:")
+(terpri)
+(princ "Year ") (setq year (read))
+(terpri)
+(if (/= year 1939) (princ "No, World War II started in 1939") (princ "Your right"))

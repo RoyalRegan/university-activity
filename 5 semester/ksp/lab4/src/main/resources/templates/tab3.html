@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>lab3</title>
+</head>
+
+<body>
+<ul>
+    <li><a href="http://localhost:8080/tab1">Основная страница</a></li>
+    <li><a href="http://localhost:8080/tab2">Задание</a></li>
+    <li><a href="http://localhost:8080/tab3">Таблица</a></li>
+</ul>
+    <button onclick="addStundent()">Add student</button>
+    <script>
+        const host = "http://localhost:8080/api/students";
+        let counter = 0;
+        let revertArr = [];
+        let canAdd = true;
+
+        function addRow(student) {
+            let margin = "margin: 5px;"
+            let div = document.createElement("div");
+            div.setAttribute("id", `div${student.id}`);
+
+            let changeButton = document.createElement("button");
+            changeButton.innerHTML = "change";
+            changeButton.setAttribute("id", `ch${student.id}`);
+            changeButton.setAttribute("onclick", "changeRow(event)");
+            changeButton.setAttribute("style", margin);
+
+            let deleteButton = document.createElement("button");
+            deleteButton.innerHTML = "delete";
+            deleteButton.setAttribute("id", `del${student.id}`);
+            deleteButton.setAttribute("onclick", "deleteRow(event)");
+            deleteButton.setAttribute("style", margin);
+
+            let fioInput = document.createElement("input");
+            fioInput.setAttribute("id", `fio${student.id}`);
+            fioInput.setAttribute("readonly", null);
+            fioInput.setAttribute("style", margin);
+            fioInput.value = student.fio;
+
+            let gropInput = document.createElement("input");
+            gropInput.setAttribute("id", `gr${student.id}`);
+            gropInput.setAttribute("readonly", null);
+            gropInput.setAttribute("style", margin);
+            gropInput.value = student.group;
+
+            div.appendChild(fioInput);
+            div.appendChild(gropInput);
+            div.appendChild(changeButton);
+            div.appendChild(deleteButton);
+
+            document.body.append(div);
+        }
+
+        function changeRow(event) {
+            let id = event.target.id.match(/(\d+)/)[0];
+
+            let changeButton = event.target;
+            let deleteButton = document.getElementById(`del${id}`);
+            let fioInput = document.getElementById(`fio${id}`);
+            let gropInput = document.getElementById(`gr${id}`);
+
+            fioInput.removeAttribute("readonly");
+            gropInput.removeAttribute("readonly");
+
+            deleteButton.innerHTML = "revert"
+            deleteButton.setAttribute("onclick", "revertRow(event)");
+
+            changeButton.innerHTML = "update";
+            changeButton.setAttribute("onclick", "udpateRow(event)");
+
+            revertArr.push({ id: id, fio: fioInput.value, group: gropInput.value })
+        }
+
+        async function deleteRow(event) {
+
+            let id = event.target.id.match(/(\d+)/)[0];
+
+            try {
+                const response = await fetch(`${host}/${id}`, { method: 'DELETE' });
+                const status = await response.status;
+
+                if (status == 200) {
+                    let div = document.getElementById(`div${id}`);
+
+                    div.parentNode.removeChild(div);
+                } else {
+                    alert('something get wrong');
+                }
+            } catch {
+                alert('server dont response');
+            }
+        }
+
+        async function udpateRow(event) {
+
+            let id = event.target.id.match(/(\d+)/)[0];
+
+            let changeButton = event.target;
+            let deleteButton = document.getElementById(`del${id}`);
+            let fioInput = document.getElementById(`fio${id}`);
+            let gropInput = document.getElementById(`gr${id}`);
+
+            try {
+                let student = { id: id, fio: fioInput.value, group: gropInput.value };
+                if (notEmpty(student)) {
+                    const response = await fetch(`${host}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(student) });
+                    const status = await response.status;
+
+                    if (status == 200) {
+                        fioInput.setAttribute("readonly", null);
+                        gropInput.setAttribute("readonly", null);
+
+                        changeButton.innerHTML = "change";
+                        changeButton.setAttribute("onclick", "changeRow(event)");
+
+                        deleteButton.innerHTML = "delete";
+                        deleteButton.setAttribute("onclick", "deleteRow(event)");
+                    } else {
+                        alert('something get wrong');
+                    }
+                } else {
+                    alert('fill all inputs');
+                }
+            }
+            catch {
+                alert('server dont response');
+            }
+        }
+
+        function revertRow(event) {
+            let id = event.target.id.match(/(\d+)/)[0];
+
+            revertArr.forEach(
+                function (elemnet, index) {
+                    if (elemnet.id == id) {
+                        let deleteButton = event.target;
+                        let changeButton = document.getElementById(`ch${id}`);
+                        let fioInput = document.getElementById(`fio${id}`);
+                        let gropInput = document.getElementById(`gr${id}`);
+
+                        fioInput.setAttribute("readonly", null);
+                        gropInput.setAttribute("readonly", null);
+
+                        fioInput.value = elemnet.fio;
+                        gropInput.value = elemnet.group;
+
+                        changeButton.innerHTML = "change";
+                        changeButton.setAttribute("onclick", "changeRow(event)");
+
+                        deleteButton.innerHTML = "delete";
+                        deleteButton.setAttribute("onclick", "deleteRow(event)");
+
+                        revertArr.splice(index, index);
+                    }
+                }
+            )
+        }
+
+        async function addStundent() {
+            if (canAdd) {
+                let margin = "margin: 5px;"
+                let div = document.createElement("div");
+                div.setAttribute("id", `newStudent`);
+
+                let acceptButton = document.createElement("button");
+                acceptButton.innerHTML = "accept";
+                acceptButton.setAttribute("id", `ac`);
+                acceptButton.setAttribute("onclick", "accept()");
+                acceptButton.setAttribute("style", margin);
+
+                let cancelButton = document.createElement("button");
+                cancelButton.innerHTML = "cancel";
+                cancelButton.setAttribute("id", `can`);
+                cancelButton.setAttribute("onclick", "cancel()");
+                cancelButton.setAttribute("style", margin);
+
+                let fioInput = document.createElement("input");
+                fioInput.setAttribute("id", `fio`);
+                fioInput.setAttribute("style", margin);
+
+                let gropInput = document.createElement("input");
+                gropInput.setAttribute("id", `gr`);
+                gropInput.setAttribute("style", margin);
+
+                div.appendChild(fioInput);
+                div.appendChild(gropInput);
+                div.appendChild(acceptButton);
+                div.appendChild(cancelButton);
+
+                document.body.append(div);
+                canAdd = false;
+            }
+            else {
+                alert("Accept or cancel the last row");
+            }
+        }
+
+        async function accept() {
+            let div = document.getElementById(`newStudent`);
+            let acceptButton = document.getElementById(`ac`);
+            let cancelButton = document.getElementById(`can`);
+            let fioInput = document.getElementById(`fio`);
+            let gropInput = document.getElementById(`gr`);
+
+            try {
+                let student = { fio: fioInput.value, group: gropInput.value };
+                if (notEmpty(student)) {
+                    const response = await fetch(`${host}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(student) });
+                    const status = await response.status;
+
+                    if (status == 200) {
+                        const json = await response.json();
+
+                        div.setAttribute("id", `div${json.id}`);
+
+                        fioInput.setAttribute("id", `fio${json.id}`);
+                        fioInput.setAttribute("readonly", null);
+
+                        gropInput.setAttribute("id", `gr${json.id}`);
+                        gropInput.setAttribute("readonly", null);
+
+                        acceptButton.setAttribute("id", `ch${json.id}`);
+                        acceptButton.innerHTML = "change";
+                        acceptButton.setAttribute("onclick", "changeRow(event)");
+
+                        cancelButton.setAttribute("id", `del${json.id}`);
+                        cancelButton.innerHTML = "delete";
+                        cancelButton.setAttribute("onclick", "deleteRow(event)");
+                        canAdd = true;
+                    } else {
+                        alert('something get wrong');
+                    }
+                } else {
+                    alert('fill all inputs');
+                }
+            }
+            catch {
+                alert('server dont response');
+            }
+        }
+
+        function cancel() {
+            let div = document.getElementById(`newStudent`);
+
+            div.parentNode.removeChild(div);
+            canAdd = true;
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch(`${host}`);
+                const json = await response.json();
+                json.forEach(it => addRow(it));
+            } catch {
+                alert('server dont response');
+            }
+        }
+
+        function notEmpty(student) {
+            if (student.fio == "" || student.group == "") {
+                return false;
+            }
+            return true;
+        }
+
+        loadData();
+    </script>
+</body>
+
+</html>

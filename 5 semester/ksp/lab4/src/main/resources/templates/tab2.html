@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>lab3</title>
+</head>
+
+<body>
+<ul>
+    <li><a href="http://localhost:8080/tab1">Основная страница</a></li>
+    <li><a href="http://localhost:8080/tab2">Задание</a></li>
+    <li><a href="http://localhost:8080/tab3">Таблица</a></li>
+</ul>
+    <input id="request" type="text"> <button onclick="count()">send data</button>
+    <br>
+    <input id="response" type="text" readonly style="margin-top: 5px;">
+    <script>
+        async function count() {
+            let str = document.getElementById("request").value;
+            const host = "http://localhost:8080/api/calculate?str=";
+            const response = await fetch(`${host + str}`, { method: 'POST' });
+            const json = await response.json();
+            document.getElementById("response").value = `${json.value}`;
+        }
+    </script>
+</body>
+
+</html>

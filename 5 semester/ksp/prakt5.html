@@ -1,0 +1,57 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Lesson 5</title>
+</head>
+
+<body>
+
+ <a>Main color: </a> <input type="color" id="mainC" value="">
+ <a>Sub color: </a> <input type="color" id="subC" value="">
+ <a>Font size</a>
+ <select id = "fontS">
+    <option value="10">10</option>
+    <option value="12">12</option>
+    <option value="14">14</option>
+    <option value="16">16</option>
+    <option value="18">18</option>
+    <option value="20">20</option>
+    <option value="22">22</option>
+ </select>
+ <br/> <br/>
+ <textarea id="input" placeholder="input text here"></textarea>
+ <input type="button" name="" value="Start" onclick="start()">
+ <p id ="text"></p>
+
+<script>
+    function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+   async function start() {
+        let mColor = document.getElementById("mainC").value;
+        let sColor = document.getElementById("subC").value;
+        let fontSize = document.getElementById("fontS").value;
+
+        const input = document.getElementById("input").value.split('');
+
+        const text = document.getElementById("text");
+        text.innerHTML = ""
+
+        let lastVar;
+
+        for (let c in input) {
+             if (lastVar!= null) {
+                text.innerHTML = lastVar
+             }
+             lastVar = text.innerHTML + input[c];
+             text.innerHTML += `<span style = "color:${Math.ceil(Math.random() * 10)%2==0?mColor:sColor};font-size:${fontSize*10}%" > ${input[c]} </span>`;
+             await sleep(125);
+        }
+        text.innerHTML = lastVar;
+    }
+</script>
+</body>
+</html>
